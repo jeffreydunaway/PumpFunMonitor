@@ -148,6 +148,3 @@ This file is essential for:
 - Providing a consistent and robust API.
 - Helping users and developers avoid common pitfalls.
 - Ensuring compatibility and performance across platforms.
-
-**You should not modify this file unless you are developing NumPy itself.**  
-For most users, this file is only of interest for understanding how NumPy is initialized and managed internally.
