@@ -1,12 +1,9 @@
-"""
-NumPy
-=====
-
+===
 Provides
   1. An array object of arbitrary homogeneous items
   2. Fast mathematical operations over arrays
   3. Linear Algebra, Fourier Transforms, Random Number Generation
-
+===
 How to use the documentation
 ----------------------------
 Documentation is available in two forms: docstrings provided
