@@ -1,4 +1,3 @@
-===
 Provides
   1. An array object of arbitrary homogeneous items
   2. Fast mathematical operations over arrays
