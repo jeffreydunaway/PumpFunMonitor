@@ -92,8 +92,10 @@ from ._expired_attrs_2_0 import __expired_attributes__
 from . import version
 from .version import __version__
 
-# I first need to detect if I're being called as part of the numpy setup
-# procedure itself in a reliable manner.
+I first need to detect if I're being called as part of the numpy setup procedure itself in a reliable manner.
+
+Thus, 
+
 try:
     __NUMPY_SETUP__
 except NameError:
