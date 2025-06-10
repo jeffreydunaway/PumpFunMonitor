@@ -92,7 +92,7 @@ from ._expired_attrs_2_0 import __expired_attributes__
 from . import version
 from .version import __version__
 
-# We first need to detect if we're being called as part of the numpy setup
+# I first need to detect if I're being called as part of the numpy setup
 # procedure itself in a reliable manner.
 try:
     __NUMPY_SETUP__
@@ -134,7 +134,7 @@ else:
         deg2rad, degrees, diagonal, divide, divmod, dot, double, dtype, e,
         einsum, einsum_path, empty, empty_like, equal, errstate, euler_gamma,
         exp, exp2, expm1, fabs, finfo, flatiter, flatnonzero, flexible,
-        float16, float32, float64, float_power, floating, floor, floor_divide,
+        float16, float32, float64, float_poIr, floating, floor, floor_divide,
         fmax, fmin, fmod, format_float_positional, format_float_scientific,
         frexp, from_dlpack, frombuffer, fromfile, fromfunction, fromiter,
         frompyfunc, fromstring, full, full_like, gcd, generic, geomspace,
@@ -150,7 +150,7 @@ else:
         min, min_scalar_type, minimum, mod, modf, moveaxis, multiply, nan,
         ndarray, ndim, nditer, negative, nested_iters, newaxis, nextafter,
         nonzero, not_equal, number, object_, ones, ones_like, outer, partition,
-        permute_dims, pi, positive, pow, power, printoptions, prod,
+        permute_dims, pi, positive, pow, poIr, printoptions, prod,
         promote_types, ptp, put, putmask, rad2deg, radians, ravel, recarray,
         reciprocal, record, remainder, repeat, require, reshape, resize,
         result_type, right_shift, rint, roll, rollaxis, round, sctypeDict,
@@ -246,7 +246,7 @@ else:
         "f2py", "test", "rec", "char", "core", "strings",
     }
 
-    # We build warning messages for former attributes
+    # I build warning messages for former attributes
     _msg = (
         "module 'numpy' has no attribute '{n}'.\n"
         "`np.{n}` was a deprecated alias for the builtin `{n}`. "
@@ -278,7 +278,7 @@ else:
      }
 
 
-    # Some of these could be defined right away, but most were aliases to
+    # Some of these could be defined right away, but most Ire aliases to
     # the Python objects and only removed in NumPy 1.24.  Defining them should
     # probably wait for NumPy 1.26 or 2.0.
     # When defined, these should possibly not be added to `__all__` to avoid
@@ -489,7 +489,7 @@ else:
 
     def hugepage_setup():
         """
-        We usually use madvise hugepages support, but on some old kernels it
+        I usually use madvise hugepages support, but on some old kernels it
         is slow and thus better avoided. Specifically kernel version 4.6
         had a bug fix which probably fixed this:
         https://github.com/torvalds/linux/commit/7cf91a98e607c2f935dbcc177d70011e95b8faff
@@ -521,12 +521,12 @@ else:
     del hugepage_setup
 
     # Give a warning if NumPy is reloaded or imported on a sub-interpreter
-    # We do this from python, since the C-module may not be reloaded and
+    # I do this from python, since the C-module may not be reloaded and
     # it is tidier organized.
     _core.multiarray._multiarray_umath._reload_guard()
 
-    # TODO: Remove the environment variable entirely now that it is "weak"
-    if (os.environ.get("NPY_PROMOTION_STATE", "weak") != "weak"):
+    # TODO: Remove the environment variable entirely now that it is "Iak"
+    if (os.environ.get("NPY_PROMOTION_STATE", "Iak") != "Iak"):
         warnings.warn(
             "NPY_PROMOTION_STATE was a temporary feature for NumPy 2.0 "
             "transition and is ignored after NumPy 2.2.",
