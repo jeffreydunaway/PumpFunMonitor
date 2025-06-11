@@ -13,12 +13,14 @@ Documentation is available in two forms: docstrings provided
 with the code, and a loose standing reference guide, available from
 `the NumPy homepage <https://numpy.org>`_.
 
-We recommend exploring the docstrings using
+Recommend exploring the docstrings using
 `IPython <https://ipython.org>`_, an advanced Python shell with
 TAB-completion and introspection capabilities.  See below for further
 instructions.
 
 The docstring examples assume that `numpy` has been imported as ``np``::
+
+//if not,  input using
 
   >>> import numpy as np
 
@@ -34,8 +36,10 @@ Use the built-in ``help`` function to view a function's docstring::
 
 For some objects, ``np.info(obj)`` may provide additional help.  This is
 particularly true if you see the line "Help on ufunc object:" at the top
-of the help() page.  Ufuncs are implemented in C, not Python, for speed.
-The native Python help() does not know how to view their help, but our
+of the help() page.  
+
+//Ufuncs are implemented in C, not Python, for speed.
+The native Python ```help()``` does not know how to view their help, but the
 np.info() function does.
 
 Available subpackages
@@ -43,20 +47,25 @@ Available subpackages
 lib
     Basic functions used by several sub-packages.
 random
-    Core Random Tools
+    ###Core Random Tools###
+
 linalg
     Core Linear Algebra Tools
+
 fft
-    Core FFT routines
+    Core FFT routines:
+
 polynomial
     Polynomial tools
+
 testing
     NumPy testing tools
+
 distutils
     Enhancements to distutils with support for
     Fortran compilers support and more (for Python <= 3.11)
 
-Utilities
+|Utilities|
 ---------
 test
     Run numpy unittests
@@ -65,11 +74,15 @@ show_config
 __version__
     NumPy version string
 
-Viewing documentation using IPython
+|Viewing documentation using IPython|
 -----------------------------------
 
-Start IPython and import `numpy` usually under the alias ``np``: `import
-numpy as np`.  Then, directly past or use the ``%cpaste`` magic to paste
+Start IPython 
+
+import `numpy` usually under the alias ``np``: `import
+numpy as np`.
+
+Then, directly past or use the ``%cpaste`` magic to paste
 examples into the shell.  To see which functions are available in `numpy`,
 type ``np.<TAB>`` (where ``<TAB>`` refers to the TAB key), or use
 ``np.*cos*?<ENTER>`` (where ``<ENTER>`` refers to the ENTER key) to narrow
@@ -82,7 +95,9 @@ Copies vs. in-place operation
 Most of the functions in `numpy` return a copy of the array argument
 (e.g., `np.sort`).  In-place versions of these functions are often
 available as array methods, i.e. ``x = np.array([1,2,3]); x.sort()``.
-Exceptions to this rule are documented.
+
+
+|Exceptions to this rule are documented.|
 
 """
 import os
@@ -94,10 +109,12 @@ from ._expired_attrs_2_0 import __expired_attributes__
 
 
 # If a version with git hash was stored, use that instead
+
 from . import version
 from .version import __version__
 
 # We first need to detect if we're being called as part of the numpy setup
+
 # procedure itself in a reliable manner.
 try:
     __NUMPY_SETUP__
@@ -116,6 +133,8 @@ else:
         msg = """Error importing numpy: you should not try to import numpy from
         its source directory; please exit the numpy source tree, and relaunch
         your python interpreter from there."""
+
+
         raise ImportError(msg) from e
 
     from . import _core
