@@ -1,0 +1,124 @@
+
+---
+
+# PumpFunMonitor Bot: First Principles & SCAMPER Analysis
+
+## 1. First Principles Analysis
+
+First Principles thinking breaks things down to their most fundamental truths and reasons up from there.
+
+### What are the Fundamentals Here?
+
+- **Goal:** Automatically discover, filter, and alert on new PumpFun coins according to your custom criteria.
+- **Core Building Blocks:**
+  - **Data Acquisition:** Get new coin info from PumpFun API.
+  - **Filtering:** Only care about coins meeting your standards (liquidity, fee, holders, etc).
+  - **Persistence:** Log results in a database (SQLite).
+  - **Alerting:** Notify you (and others) on Telegram when something interesting happens.
+  - **Repeat:** Do this on a fixed schedule.
+
+### Why These Choices?
+
+- **web3.js:** To interact with Ethereum easily in JavaScript/Node.js.
+- **axios:** For simple HTTP requests (to PumpFun API).
+- **sqlite3:** Lightweight, zero-config, and fast local database.
+- **node-telegram-bot-api:** Easiest way to push messages to Telegram.
+- **Environment variables:** Secure, configurable, and easy to change for deployment.
+
+### How Does It Work?
+
+- Loads settings from `.env` (API keys, thresholds, Telegram info).
+- On startup, sets up the database schema if needed.
+- Every POLL_INTERVAL seconds:
+  1. Fetches the latest coins from PumpFun.
+  2. Parses and checks each coin:
+      - Meets your minimum quality bar? (liquidity, fee, holders, age)
+      - Creator or coin is blacklisted? (including “too many coins” per creator)
+  3. If it passes, saves the coin and sends a Telegram alert.
+- All logic is modular and clear—each function does one thing.
+
+---
+
+## 2. SCAMPER Method for Creative Analysis
+
+SCAMPER stands for **Substitute, Combine, Adapt, Modify, Put to another use, Eliminate, Reverse**. It’s a method to brainstorm improvements or variations.
+
+### S - Substitute
+
+- **Data Source:** Swap out PumpFun for another launchpad API by changing the endpoint and data parsing.
+- **Database:** Use MongoDB or Postgres instead of SQLite.
+- **Notifications:** Use Discord, email, or SMS instead of Telegram.
+
+### C - Combine
+
+- **With Trading Bots:** After filtering, trigger an auto-buy.
+- **On-chain Analytics:** Add wallet reputation APIs for deeper filtering.
+- **Sentiment Analysis:** Integrate Twitter, Reddit, or news feeds.
+
+### A - Adapt
+
+- **Other Chains:** Use BSC, Solana, etc., by changing provider/APIs.
+- **Filter Logic:** Update filtering as new scam patterns or market trends appear.
+
+### M - Modify (Magnify/Minimize)
+
+- **Magnify:** Increase polling frequency, add more data fields, or use advanced ML filters.
+- **Minimize:** Strip out features for speed or simplicity.
+
+### P - Put to Another Use
+
+- Monitor NFT launches, airdrops, or other DeFi events.
+- Use the framework for anything API+filter+alert (e.g., web monitoring).
+
+### E - Eliminate
+
+- Remove the database for real-time-only alerts.
+- Remove Telegram if you prefer another notification channel.
+
+### R - Reverse
+
+- Track/remediate bad actors or scam coins rather than just finding good ones.
+- Reverse the filter: alert on coins that fail criteria for research.
+
+---
+
+## 3. Self-Efficacy—How Can You Own and Extend This?
+
+### Understand Each Module
+
+- **Config:** All thresholds and keys are in one place—change and observe effects.
+- **Database:** Open `pumpfun.db` with any SQLite client (e.g., `sqlitebrowser`).
+- **API:** View the raw PumpFun API with a browser or Postman.
+- **Filter Logic:** Tweak thresholds or add new rules directly in `applyFilters()`.
+
+### Experiment
+
+- Change `POLL_INTERVAL` for speed.
+- Add new fields and capture more info.
+- Add new notifications (e.g., Discord) by copying the Telegram logic.
+
+### Debug and Log
+
+- Use `console.log` to inspect raw data and logic.
+- Use try/catch for robust experimentation.
+
+### Learn by Doing
+
+- Clone, run, break, and fix the code.
+- Start simple, then add features you wish it had.
+
+---
+
+## 4. Summary Table of Key Functions
+
+| Function           | Purpose                                                      |
+|--------------------|-------------------------------------------------------------|
+| fetchMigratedCoins | Get new coins from PumpFun                                  |
+| parseCoin          | Extract relevant fields from raw API data                   |
+| isBlacklisted      | Check coin/creator against blacklists and "too many coins"  |
+| applyFilters       | Apply custom filters: liquidity, fee, holders, age          |
+| saveCoin           | Store coin data in SQLite                                   |
+| sendTelegramAlert  | Notify Telegram channel about new coin                      |
+| mainLoop           | Orchestrates periodic fetching, filtering, saving, alerting |
+
+---
