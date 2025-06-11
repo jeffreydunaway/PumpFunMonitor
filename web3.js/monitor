@@ -1,0 +1,156 @@
+// pumpfun_bot.js
+
+require('dotenv').config();
+const axios = require('axios');
+const { Web3 } = require('web3');
+const sqlite3 = require('sqlite3').verbose();
+const TelegramBot = require('node-telegram-bot-api');
+const { setIntervalAsync } = require('set-interval-async/dynamic');
+
+const CONFIG = {
+  PUMPFUN_KEY: process.env.PUMPFUN_KEY,
+  INFURA_KEY: process.env.INFURA_KEY,
+  ETHERSCAN_KEY: process.env.ETHERSCAN_KEY,
+  POLL_INTERVAL: parseInt(process.env.POLL_INTERVAL || '60'),
+
+  MIN_LIQUIDITY: parseFloat(process.env.MIN_LIQUIDITY || '5.0'),
+  MAX_CREATOR_FEE: parseFloat(process.env.MAX_CREATOR_FEE || '10.0'),
+  MIN_HOLDERS: parseInt(process.env.MIN_HOLDERS || '25'),
+  BLOCK_NEW_COINS_MINUTES: parseInt(process.env.BLOCK_NEW_COINS_MINUTES || '10'),
+  MAX_COINS_PER_CREATOR: parseInt(process.env.MAX_COINS_PER_CREATOR || '3'),
+
+  COIN_ADDRESSES: (process.env.COIN_ADDRESSES || '').split(','),
+  DEV_ADDRESSES: (process.env.DEV_ADDRESSES || '').split(','),
+
+  TELEGRAM_TOKEN: process.env.TELEGRAM_TOKEN,
+  TELEGRAM_CHANNEL_ID: process.env.TELEGRAM_CHANNEL_ID,
+};
+
+const web3 = new Web3(`https://mainnet.infura.io/v3/${CONFIG.INFURA_KEY}`);
+const db = new sqlite3.Database('pumpfun.db');
+const bot = CONFIG.TELEGRAM_TOKEN ? new TelegramBot(CONFIG.TELEGRAM_TOKEN) : null;
+
+// Database setup
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS coins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contract_address TEXT UNIQUE,
+    name TEXT,
+    symbol TEXT,
+    creator_wallet TEXT,
+    migration_time TEXT,
+    initial_liquidity REAL,
+    creator_fee REAL,
+    holders INTEGER,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+  // Add other tables as needed...
+});
+
+async function fetchMigratedCoins(limit = 10) {
+  try {
+    const resp = await axios.get('https://api.pump.fun/migrations', {
+      headers: { Authorization: `Bearer ${CONFIG.PUMPFUN_KEY}` },
+      params: { limit, sort: 'desc' },
+      timeout: 10000
+    });
+    return resp.data.data || [];
+  } catch (e) {
+    console.error('fetchMigratedCoins error:', e.message);
+    return [];
+  }
+}
+
+function parseCoin(raw) {
+  try {
+    return {
+      contract_address: web3.utils.toChecksumAddress(raw.contractAddress),
+      name: raw.token?.name || 'Unknown',
+      symbol: raw.token?.symbol || 'UNK',
+      creator_wallet: web3.utils.toChecksumAddress(raw.creator),
+      migration_time: raw.migrationTime,
+      initial_liquidity: parseFloat(raw.initialLiquidity || 0),
+      creator_fee: parseFloat(raw.feePercentage || 0),
+      holders: parseInt(raw.holderCount || 0),
+    };
+  } catch (e) {
+    console.error('parseCoin error:', e.message);
+    return null;
+  }
+}
+
+function isBlacklisted(coin) {
+  if (
+    CONFIG.COIN_ADDRESSES.includes(coin.contract_address) ||
+    CONFIG.DEV_ADDRESSES.includes(coin.creator_wallet)
+  ) {
+    return true;
+  }
+  // Max coins per creator logic:
+  return new Promise(resolve => {
+    db.get(
+      'SELECT COUNT(*) as cnt FROM coins WHERE creator_wallet = ?',
+      [coin.creator_wallet],
+      (err, row) => {
+        if (err) return resolve(true);
+        resolve(row.cnt > CONFIG.MAX_COINS_PER_CREATOR);
+      }
+    );
+  });
+}
+
+function applyFilters(coin) {
+  const minAgo = (Date.now() - new Date(coin.migration_time).getTime()) / (60 * 1000);
+  return (
+    coin.initial_liquidity >= CONFIG.MIN_LIQUIDITY &&
+    coin.creator_fee <= CONFIG.MAX_CREATOR_FEE &&
+    coin.holders >= CONFIG.MIN_HOLDERS &&
+    minAgo > CONFIG.BLOCK_NEW_COINS_MINUTES
+  );
+}
+
+function saveCoin(coin) {
+  db.run(
+    `INSERT OR IGNORE INTO coins (
+      contract_address, name, symbol, creator_wallet, migration_time,
+      initial_liquidity, creator_fee, holders
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      coin.contract_address,
+      coin.name,
+      coin.symbol,
+      coin.creator_wallet,
+      coin.migration_time,
+      coin.initial_liquidity,
+      coin.creator_fee,
+      coin.holders
+    ]
+  );
+}
+
+function sendTelegramAlert(coin) {
+  if (!bot) return;
+  const msg = `New coin found:
+Symbol: ${coin.symbol}
+Contract: ${coin.contract_address}
+Liquidity: ${coin.initial_liquidity}`;
+  bot.sendMessage(CONFIG.TELEGRAM_CHANNEL_ID, msg);
+}
+
+async function mainLoop() {
+  setIntervalAsync(async () => {
+    const coinsRaw = await fetchMigratedCoins();
+    for (const rawCoin of coinsRaw) {
+      const coin = parseCoin(rawCoin);
+      if (!coin) continue;
+      if (!applyFilters(coin)) continue;
+      if (await isBlacklisted(coin)) continue;
+      saveCoin(coin);
+      sendTelegramAlert(coin);
+      // Add additional analysis or actions here...
+      console.log(`[INFO] Processed ${coin.symbol} (${coin.contract_address})`);
+    }
+  }, CONFIG.POLL_INTERVAL * 1000);
+}
+
+mainLoop();
